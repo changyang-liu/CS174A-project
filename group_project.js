@@ -69,25 +69,24 @@ export class GroupProject extends Scene {
             this.models.lamp1 = new Lamp_Model(program_state, mt_lamp1);
             this.models.lamp2 = new Lamp_Model(program_state, mt_lamp2);
 
-            
+            let model_id = 1000;
+			for (var model_name in this.models) {
+				// assign ID to model
+				this.models[model_name].id = model_id; // id is used to identify the model from the call to gl.readPixels()
+				
+				var r = Math.floor(model_id / (255*255));
+				var g = Math.floor(model_id / 255) % 256;
+				var b = model_id % 256;
+				var c = color(r/255,g/255,b/255,1);
+				this.models[model_name].id_color = c; // id_color is used to override the model's material color when drawing
+				
+				model_id++;
+			}
         }
 
         // draw dummy models for mouse picking
-        let model_id = 1000;
         for (var model_name in this.models) {
-        	// assign ID to model
-            this.models[model_name].id = model_id; // id is used to identify the model from the call to gl.readPixels()
-            
-            var r = Math.floor(model_id / (255*255));
-            var g = Math.floor(model_id / 255) % 256;
-            var b = model_id % 256;
-            var c = color(r/255,g/255,b/255,1);
-            this.models[model_name].id_color = c; // id_color is used to override the model's material color when drawing
-
-        	// draw "dummy" model to mouse-pick
         	this.models[model_name].draw_dummy(context,program_state);
-
-        	model_id++;
         }
         
         
