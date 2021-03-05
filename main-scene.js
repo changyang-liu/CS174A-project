@@ -1,6 +1,6 @@
-import {tiny, defs} from './examples/common.js';
+import {defs, tiny} from './examples/common.js';
                                                   // Pull these names into this module's scope for convenience:
-const { Vector, Vector3, vec, vec3, vec4, color, Matrix, Mat4, Light, Shape, Material, Shader, Texture, Scene,
+const { Vector, Vector3, vec, vec3, vec4, color, hex_color, Matrix, Mat4, Light, Shape, Material, Shader, Texture, Scene,
         Canvas_Widget, Code_Widget, Text_Widget } = tiny;
 
     // Now we have loaded everything in the files tiny-graphics.js, tiny-graphics-widgets.js, and common.js.
@@ -28,6 +28,8 @@ import { Text_Demo }
   from "./examples/text-demo.js"
 import { Transforms_Sandbox }
   from "./examples/transforms-sandbox.js"
+import { GroupProject }
+  from "./group_project.js"
 
 Object.assign( defs,
                      { Axes_Viewer, Axes_Viewer_Test_Scene },
@@ -37,13 +39,14 @@ Object.assign( defs,
                      { Scene_To_Texture_Demo },
                      { Surfaces_Demo },
                      { Text_Demo },
-                     { Transforms_Sandbox } );
+                     { Transforms_Sandbox },
+                     { GroupProject } );
 
     // ******************** End extra step
 
 // (Can define Main_Scene's class here)
 
-const Main_Scene = Transforms_Sandbox;
+const Main_Scene = GroupProject;
 const Additional_Scenes = [];
 
 export { Main_Scene, Additional_Scenes, Canvas_Widget, Code_Widget, Text_Widget, defs }
