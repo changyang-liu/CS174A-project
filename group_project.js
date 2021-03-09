@@ -1,4 +1,8 @@
 import {defs, tiny} from './examples/common.js';
+import {Flooring} from './Flooring.js';
+import {Wall} from './Wall.js';
+import {Drawer_Model} from './Drawer_Model.js';
+import {Lamp_Model} from './Lamp_Model.js';
 
 const {
     Vector, Vector3, vec, vec3, vec4, color, hex_color, Shader, Matrix, Mat4, Light, Shape, Material, Scene,
@@ -44,13 +48,15 @@ export class GroupProject extends Scene {
         program_state.projection_transform = Mat4.perspective(
             Math.PI / 4, context.width / context.height, .1, 1000);
 		program_state.lights = [];
-		program_state.lights.push(new Light(vec4(-30,50,-20,1), color(0.2, 0.4, 1, 1), 1000*3));
+		program_state.lights.push(new Light(vec4(0,50,-20,1), color(0.2, 0.4, 1, 1), 1000*5));
         const t = program_state.animation_time / 1000, dt = program_state.animation_delta_time / 1000;
         
 
         // do some set up
         const gl = context.context;
-        if (!this.initialized) {
+
+        if (!this.initialized) 
+        {
         	this.initialized = true;
         	// create mouse click listener
         	gl.canvas.addEventListener('click', (e) => {
@@ -61,13 +67,29 @@ export class GroupProject extends Scene {
 
             // create all models in our scene
             // here, we are creating two lamps, one on the floor and one on top of a nightstand, each of which will light up when clicked
-            let mt_drawer1 = model_transform.times(Mat4.translation(0,-5,3));
+            const ground_level = 13; // arbitrary; chose to define the ground level as the bottom of drawer1, just because it was the order that it was coded in
+
+            let mt_drawer1 = model_transform.times(Mat4.translation(-20,-40,3));
             this.models.drawer1 = new Drawer_Model(program_state, mt_drawer1, 2);
 
             let mt_lamp1 = model_transform.times(Mat4.translation(-8,30,4));
-            let mt_lamp2 = model_transform.times(Mat4.translation(-2,-6,-4.55));
+            let mt_lamp2 = model_transform.times(Mat4.translation(-2-20,-40-1,-4.55));
             this.models.lamp1 = new Lamp_Model(program_state, mt_lamp1);
             this.models.lamp2 = new Lamp_Model(program_state, mt_lamp2);
+
+            let mt_flooring = model_transform.times(Mat4.translation(0,0,ground_level));
+            this.models.flooring = new Flooring(program_state, mt_flooring);
+
+            let mt_wall_left = model_transform.times(Mat4.translation(-50,0,ground_level));
+            let mt_wall_right = model_transform.times(Mat4.translation(50,0,ground_level));
+            let mt_wall_front = model_transform.times(Mat4.rotation(Math.PI/2,0,0,1)).times(Mat4.translation(-50,0,ground_level)).times(Mat4.rotation(Math.PI,0,0,1));
+            let mt_wall_back = model_transform.times(Mat4.rotation(Math.PI/2,0,0,1)).times(Mat4.translation(50,0,ground_level));
+            
+            this.models.wall_left = new Wall(program_state, mt_wall_left);
+            this.models.wall_right = new Wall(program_state, mt_wall_right);
+            this.models.wall_front = new Wall(program_state, mt_wall_front);
+            //this.models.wall_back = new Wall(program_state, mt_wall_back); // omitted because of camera clipping
+
 
             let model_id = 1000;
 			for (var model_name in this.models) {
@@ -91,6 +113,7 @@ export class GroupProject extends Scene {
         
         
         // get model under mouse
+        // reference: https://webglfundamentals.org/webgl/lessons/webgl-picking.html
         const pixelX = this.mouseX * gl.canvas.width / gl.canvas.clientWidth;
         const pixelY = gl.canvas.height - this.mouseY * gl.canvas.height / gl.canvas.clientHeight - 1;
         const data = new Uint8Array(4);
@@ -126,182 +149,8 @@ export class GroupProject extends Scene {
     }
 }
 
-/*
- All models must define:
-  - update_state(program_state, model_transform) // if you don't need to modify program_state, just return program_state as is
-  - draw(context, program_state) // draws the model normally
-  - draw_dummy(context, program_state) // draws a dummy version of the model which uses the mouse_picking dummy material, color set to model ID
-  - interact(program_state) // change some internal state of the model
-  - update_transform(program_state, model_transform) // can be inlined, but by having it separate we can allow for dynamic/moving models
-*/
-class Lamp_Model {
-	constructor(program_state, model_transform = Mat4.identity(), scale=1) {
-		this.scale = scale;
-		this.rod_length = 5;
-		this.isOn = false;
-
-        this.shapes = {
-        	lamp_shade: new (defs.Cylindrical_Tube.prototype.make_flat_shaded_version())( 7, 10,  [[ .67, 1  ], [ 0,1 ]] ),
-			lamp_pole: new defs.Cylindrical_Tube( 7, 10,  [[ .67, 1  ], [ 0,1 ]] ),
-			lamp_base: new defs.Cube(),
-			lamp_bulb: new defs.Subdivision_Sphere(3),
-        }
-        this.materials = {
-            mouse_picking: new Material(new Picking_Shader(),
-                {ambient: 0.2, specularity: 1.0, diffusivity: 0.8, color: hex_color("#FFFFFF")}),
-
-        	lamp_shade: new Material(new Gouraud_Shader(),
-                {ambient: 0.2, specularity: 1.0, diffusivity: 0.8, color: hex_color("#d9be7e")}),
-            lamp_pole: new Material(new Gouraud_Shader(),
-                {ambient: 0, specularity: 0.1, diffusivity: 0.8, color: hex_color("#383c57")}),
-            lamp_base: new Material(new Gouraud_Shader(),
-                {ambient: 0, specularity: 1.0, diffusivity: 0.8, color: hex_color("#383c57")}),
-            lamp_bulb: new Material(new Gouraud_Shader(),
-                {ambient: 0.5, specularity: 1.0, diffusivity: 1.0, color: hex_color("#FFFFFF")}),
-        }
-
-        this.update_transform(program_state, model_transform);
-	}
-	// if the position of the object needs to be dynamic, recompute the transformations of its components
-    update_transform(program_state, model_transform) {
-    	// Given model_transform for initial position of the lamp, set the relative position of the pole/base/lightbulb
-    	model_transform = model_transform.times(Mat4.scale(this.scale,this.scale,this.scale));
-		this.model_transform = model_transform
-		this.mt_shade = model_transform.times(Mat4.scale(2,2,3));
-		this.mt_pole = model_transform.times(Mat4.translation(0,0,this.rod_length/2)).times(Mat4.scale(0.2, 0.2, this.rod_length));
-		this.mt_base = model_transform.times(Mat4.translation(0,0,this.rod_length)).times(Mat4.scale(1.5,1.5,0.2));
-		this.mt_bulb = model_transform.times(Mat4.scale(0.75,0.75,0.75));
-    }
-    update_state(program_state) {
-    	program_state.lights.push(new Light(this.model_transform.times(vec4(0,0,0,1)), color(1, 0.8, 0.8, 1), 3*1000*this.isOn));
-    	return program_state;
-    }
-	draw(context, program_state, model_transform = null) {
-		// if the position of the object needs to be dynamic, recompute the transformations of its components
-		if (model_transform != null) {
-		    this.update_transform(program_state, model_transform);
-		}
-		
-		let lamp_ambient = 0.2;
-
-		if (this.isOn) {
-			lamp_ambient = 0.8;
-			//program_state.lights.push(new Light(this.model_transform.times(vec4(0,0,0,1)), color(1, 0.8, 0.8, 1), 1000*this.isOn));
-		}
-        // light source translated to center of lamp (at bulb)
-		this.shapes.lamp_shade.draw(context, program_state, this.mt_shade, this.materials.lamp_shade.override({ambient: lamp_ambient}));
-		this.shapes.lamp_pole.draw(context, program_state, this.mt_pole, this.materials.lamp_pole);
-		this.shapes.lamp_base.draw(context, program_state, this.mt_base, this.materials.lamp_base);
-		this.shapes.lamp_bulb.draw(context, program_state, this.mt_bulb, this.materials.lamp_bulb.override({ambient: lamp_ambient}));
-	}
-	draw_dummy(context, program_state) {
-		let dummy_material = this.materials.mouse_picking.override({color: this.id_color});
-		this.shapes.lamp_shade.draw(context, program_state, this.mt_shade, dummy_material);
-		this.shapes.lamp_pole.draw(context, program_state, this.mt_pole, dummy_material);
-		this.shapes.lamp_base.draw(context, program_state, this.mt_base, dummy_material);
-		this.shapes.lamp_bulb.draw(context, program_state, this.mt_bulb, dummy_material);
-	}
-	interact(program_state) {
-		this.isOn ^= 1;
-	}
-}
-
-
-class Drawer_Model {
-	constructor(program_state, model_transform = Mat4.identity(), scale=1) {
-		this.scale = scale;
-		this.leg_width = 0.3;
-		this.leg_length = 5;
-		this.box_width = 1.5;
-		this.box_depth = 1.5;
-		this.box_height = 2.5;
-		this.isOn = false;
-
-        this.shapes = {
-        	//drawer_leg: new (defs.Cylindrical_Tube.prototype.make_flat_shaded_version())( 7, 10,  [[ .67, 1  ], [ 0,1 ]] ),
-			drawer_box: new defs.Cube(),
-			drawer_leg: new defs.Cube(),
-        }
-        this.materials = {
-            mouse_picking: new Material(new Picking_Shader(),
-                {ambient: 0.2, specularity: 1.0, diffusivity: 0.8, color: hex_color("#FFFFFF")}),
-
-        	drawer_leg: new Material(new Gouraud_Shader(),
-                {ambient: 0, specularity: 0, diffusivity: 0.5, color: hex_color("#75562f")}),
-            drawer_box: new Material(new Gouraud_Shader(),
-                {ambient: 0, specularity: 0.1, diffusivity: 0.5, color: hex_color("#996f3a")}),
-            drawer_drawer:  new Material(new Gouraud_Shader(),
-                {ambient: 0, specularity: 0.1, diffusivity: 0.5, color: hex_color("#734f22")}),
-            drawer_handle:  new Material(new Gouraud_Shader(),
-                {ambient: 0, specularity: 1.0, diffusivity: 1.0, color: hex_color("#1a1611")}),
-        }
-
-        this.update_transform(program_state, model_transform);
-	}
-	update_transform(program_state, model_transform) {
-		model_transform = model_transform.times(Mat4.scale(this.scale,this.scale,this.scale));
-		this.model_transform = model_transform;
-        model_transform = model_transform.times(Mat4.translation(0,0,this.leg_length/2));
-		this.mt_leg1 = model_transform.times(Mat4.translation(-this.box_width,-this.box_depth,0)).times(Mat4.scale(this.leg_width,this.leg_width,this.leg_length/2));
-		this.mt_leg2 = model_transform.times(Mat4.translation(-this.box_width,this.box_depth,0)).times(Mat4.scale(this.leg_width,this.leg_width,this.leg_length/2));
-		this.mt_leg3 = model_transform.times(Mat4.translation(this.box_width,-this.box_depth,0)).times(Mat4.scale(this.leg_width,this.leg_width,this.leg_length/2));
-		this.mt_leg4 = model_transform.times(Mat4.translation(this.box_width,this.box_depth,0)).times(Mat4.scale(this.leg_width,this.leg_width,this.leg_length/2));
-		model_transform = model_transform.times(Mat4.translation(0,0,-this.leg_length/2));
-		this.mt_body = model_transform.times(Mat4.translation(0,0,this.box_height/2)).times(Mat4.scale(this.box_width+2*(this.leg_width),this.box_depth+2*(this.leg_width),this.box_height));
-		this.mt_drawer1 = model_transform.times(Mat4.translation(0,this.box_depth+2*this.leg_width,0)).times(Mat4.scale(this.box_width,this.box_depth/10,this.box_height/4));
-		this.mt_drawer2 = model_transform.times(Mat4.translation(0,this.box_depth+2*this.leg_width,this.box_height/2*1.5)).times(Mat4.scale(this.box_width,this.box_depth/10,this.box_height/4));
-
-		this.mt_handle1 = model_transform.times(Mat4.translation(0,this.box_depth+2.5*this.leg_width,0)).times(Mat4.scale(this.box_width/4,this.box_depth/10,this.box_height/12));
-		this.mt_handle2 = model_transform.times(Mat4.translation(0,this.box_depth+2.5*this.leg_width,this.box_height/2*1.5)).times(Mat4.scale(this.box_width/4,this.box_depth/10,this.box_height/16));
-		
-    }
-    update_state(program_state) {
-    	return program_state;
-    }
-	draw(context, program_state, model_transform = null) {
-		// if the position of the object needs to be dynamic, recompute the transformations of its components
-		if (model_transform != null) {
-		    this.update_transform(program_state, model_transform);
-		}
-		if (this.isOn) {
-
-		}
-		this.shapes.drawer_leg.draw(context, program_state, this.mt_leg1, this.materials.drawer_leg);
-		this.shapes.drawer_leg.draw(context, program_state, this.mt_leg2, this.materials.drawer_leg);
-		this.shapes.drawer_leg.draw(context, program_state, this.mt_leg3, this.materials.drawer_leg);
-		this.shapes.drawer_leg.draw(context, program_state, this.mt_leg4, this.materials.drawer_leg);
-        
-		this.shapes.drawer_box.draw(context, program_state, this.mt_body, this.materials.drawer_box);
-		this.shapes.drawer_box.draw(context, program_state, this.mt_drawer1, this.materials.drawer_drawer);
-		this.shapes.drawer_box.draw(context, program_state, this.mt_drawer2, this.materials.drawer_drawer);
-		this.shapes.drawer_box.draw(context, program_state, this.mt_handle1, this.materials.drawer_handle);
-		this.shapes.drawer_box.draw(context, program_state, this.mt_handle2, this.materials.drawer_handle);
-        
-	}
-	draw_dummy(context, program_state) {
-		let dummy_material = this.materials.mouse_picking.override({color: this.id_color});
-		
-		this.shapes.drawer_leg.draw(context, program_state, this.mt_leg1, dummy_material);
-		this.shapes.drawer_leg.draw(context, program_state, this.mt_leg2, dummy_material);
-		this.shapes.drawer_leg.draw(context, program_state, this.mt_leg3, dummy_material);
-		this.shapes.drawer_leg.draw(context, program_state, this.mt_leg4, dummy_material);
-        
-		this.shapes.drawer_box.draw(context, program_state, this.mt_body, dummy_material);
-		this.shapes.drawer_box.draw(context, program_state, this.mt_drawer1, dummy_material);
-		this.shapes.drawer_box.draw(context, program_state, this.mt_drawer2, dummy_material);
-		this.shapes.drawer_box.draw(context, program_state, this.mt_handle1, dummy_material);
-		this.shapes.drawer_box.draw(context, program_state, this.mt_handle2, dummy_material);
-		
-	}
-	interact(program_state) {
-		this.isOn ^= 1;
-	}
-	
-}
-
-
 // special shader to keep track of model IDs
-class Picking_Shader extends Shader {
+export class Picking_Shader extends Shader {
     update_GPU(context, gpu_addresses, graphics_state, model_transform, material) {
         // update_GPU():  Defining how to synchronize our JavaScript's variables to the GPU's:
         const [P, C, M] = [graphics_state.projection_transform, graphics_state.camera_inverse, model_transform],
@@ -355,7 +204,7 @@ class Picking_Shader extends Shader {
 
 
 
-class Gouraud_Shader extends Shader {
+export class Gouraud_Shader extends Shader {
     // This is a Shader using Phong_Shader as template
     // TODO: Modify the glsl coder here to create a Gouraud Shader (Planet 2)
 
