@@ -3,6 +3,7 @@ import {Flooring} from './Flooring.js';
 import {Wall} from './Wall.js';
 import {Drawer_Model} from './Drawer_Model.js';
 import {Lamp_Model} from './Lamp_Model.js';
+import {Bed_Model} from './bed.js'
 
 const {
     Vector, Vector3, vec, vec3, vec4, color, hex_color, Shader, Matrix, Mat4, Light, Shape, Material, Scene,
@@ -90,6 +91,8 @@ export class GroupProject extends Scene {
             this.models.wall_front = new Wall(program_state, mt_wall_front);
             //this.models.wall_back = new Wall(program_state, mt_wall_back); // omitted because of camera clipping
 
+            const mt_bed = model_transform.times(Mat4.translation(-40, 3, 10));
+            this.models.bed = new Bed_Model(program_state, mt_bed)
 
             let model_id = 1000;
 			for (var model_name in this.models) {
