@@ -15,10 +15,10 @@ const {
 */
 
 export class Lamp_Model {
-	constructor(program_state, model_transform = Mat4.identity(), scale=1) {
+	constructor(program_state, model_transform = Mat4.identity(), scale=1, rod_length) {
 		this.scale = scale;
-		this.rod_length = 5;
 		this.isOn = true;
+		this.rod_length = rod_length;
 
 		this.animation_frame = 0;
 		this.animation_max_time = 20;
