@@ -5,6 +5,7 @@ import {Drawer_Model} from './Drawer_Model.js';
 import {Lamp_Model} from './Lamp_Model.js';
 import {Bed_Model} from './bed.js'
 import {Window_Model} from "./window.js"
+import { Phone_Model } from './phone.js';
 
 const {
     Vector, Vector3, vec, vec3, vec4, color, hex_color, Shader, Matrix, Mat4, Light, Shape, Material, Scene,
@@ -97,6 +98,9 @@ export class GroupProject extends Scene {
 
             const mt_window = model_transform.times(Mat4.translation(10, -49, -10));
             this.models.window = new Window_Model(program_state, mt_window, 1.3)
+
+            const mt_phone = model_transform.times(Mat4.translation(15, 35, -8));
+            this.models.phone = new Phone_Model(program_state, mt_phone, 1)
 
             let model_id = 1000;
 			for (var model_name in this.models) {
