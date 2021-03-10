@@ -3,6 +3,10 @@ import {Flooring} from './Flooring.js';
 import {Wall} from './Wall.js';
 import {Drawer_Model} from './Drawer_Model.js';
 import {Lamp_Model} from './Lamp_Model.js';
+import {Table_Model} from './Table_Model.js';
+import {Chair_Model} from './Chair_Model.js';
+import {Monitor_Model} from './Monitor_Model.js';
+import {Door_Model} from './Door_Model.js';
 
 const {
     Vector, Vector3, vec, vec3, vec4, color, hex_color, Shader, Matrix, Mat4, Light, Shape, Material, Scene,
@@ -72,10 +76,22 @@ export class GroupProject extends Scene {
             let mt_drawer1 = model_transform.times(Mat4.translation(-20,-40,3));
             this.models.drawer1 = new Drawer_Model(program_state, mt_drawer1, 2);
 
-            let mt_lamp1 = model_transform.times(Mat4.translation(-8,30,4));
+            let mt_table = model_transform.times(Mat4.translation(-45,10,3));
+            this.models.table = new Table_Model(program_state, mt_table, 2);
+
+            let mt_chair = model_transform.times(Mat4.translation(-40,10,ground_level-5.0));
+            this.models.chair = new Chair_Model(program_state, mt_chair, 2);
+
+            let mt_monitor = model_transform.times(Mat4.translation(-49,10,ground_level-20));
+            this.models.monitor = new Monitor_Model(program_state, mt_monitor, 2);
+
+            let mt_door = model_transform.times(Mat4.translation(49,10,ground_level-18));
+            this.models.door = new Door_Model(program_state, mt_door, 2);
+
+            let mt_lamp1 = model_transform.times(Mat4.translation(-45,25,ground_level-20));
             let mt_lamp2 = model_transform.times(Mat4.translation(-2-20,-40-1,-4.55));
-            this.models.lamp1 = new Lamp_Model(program_state, mt_lamp1);
-            this.models.lamp2 = new Lamp_Model(program_state, mt_lamp2);
+            this.models.lamp1 = new Lamp_Model(program_state, mt_lamp1, 1, 20);
+            this.models.lamp2 = new Lamp_Model(program_state, mt_lamp2, 1, 5);
 
             let mt_flooring = model_transform.times(Mat4.translation(0,0,ground_level));
             this.models.flooring = new Flooring(program_state, mt_flooring);
@@ -208,7 +224,7 @@ export class Gouraud_Shader extends Shader {
     // This is a Shader using Phong_Shader as template
     // TODO: Modify the glsl coder here to create a Gouraud Shader (Planet 2)
 
-    constructor(num_lights = 3) {
+    constructor(num_lights = 4) {
         super();
         this.num_lights = num_lights;
     }
