@@ -72,8 +72,7 @@ export class Window_Model {
     }
     update_state(program_state) {
 		const cur_progress = this.animation_frame/this.animation_max_time;
-        console.log(cur_progress)
-        const light_transform = this.model_transform.times(Mat4.translation(0, 30, 0))
+        const light_transform = this.model_transform.times(Mat4.translation(0, 10, 0))
     	program_state.lights.push(new Light(light_transform.times(vec4(0,0,0,1)), color(1, 1, 1, 1), 1*100000*cur_progress));
     	return program_state;
     }
@@ -95,7 +94,6 @@ export class Window_Model {
 		} else {
 			if (this.animation_frame < this.animation_max_time) {
 			this.animation_frame += 1;
-            console.log(program_state.lights)
             }
 		}
 
