@@ -7,6 +7,10 @@ import {Table_Model} from './Table_Model.js';
 import {Chair_Model} from './Chair_Model.js';
 import {Monitor_Model} from './Monitor_Model.js';
 import {Door_Model} from './Door_Model.js';
+import {Bed_Model} from './bed.js'
+import {Window_Model} from "./window.js"
+import { Phone_Model } from './phone.js';
+
 
 const {
     Vector, Vector3, vec, vec3, vec4, color, hex_color, Shader, Matrix, Mat4, Light, Shape, Material, Scene,
@@ -106,6 +110,14 @@ export class GroupProject extends Scene {
             this.models.wall_front = new Wall(program_state, mt_wall_front);
             //this.models.wall_back = new Wall(program_state, mt_wall_back); // omitted because of camera clipping
 
+            const mt_bed = model_transform.times(Mat4.translation(-40, 3, 10));
+            this.models.bed = new Bed_Model(program_state, mt_bed)
+
+            const mt_window = model_transform.times(Mat4.translation(10, -49, -10));
+            this.models.window = new Window_Model(program_state, mt_window, 1.3)
+
+            const mt_phone = model_transform.times(Mat4.translation(15, 35, -8));
+            this.models.phone = new Phone_Model(program_state, mt_phone, 1)
 
             let model_id = 1000;
 			for (var model_name in this.models) {
