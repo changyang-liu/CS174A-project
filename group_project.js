@@ -4,6 +4,7 @@ import {Wall} from './Wall.js';
 import {Drawer_Model} from './Drawer_Model.js';
 import {Lamp_Model} from './Lamp_Model.js';
 import {Bed_Model} from './bed.js'
+import {Window_Model} from "./window.js"
 
 const {
     Vector, Vector3, vec, vec3, vec4, color, hex_color, Shader, Matrix, Mat4, Light, Shape, Material, Scene,
@@ -93,6 +94,9 @@ export class GroupProject extends Scene {
 
             const mt_bed = model_transform.times(Mat4.translation(-40, 3, 10));
             this.models.bed = new Bed_Model(program_state, mt_bed)
+
+            const mt_window = model_transform.times(Mat4.translation(10, -49, -10));
+            this.models.window = new Window_Model(program_state, mt_window, 1.3)
 
             let model_id = 1000;
 			for (var model_name in this.models) {
@@ -211,7 +215,7 @@ export class Gouraud_Shader extends Shader {
     // This is a Shader using Phong_Shader as template
     // TODO: Modify the glsl coder here to create a Gouraud Shader (Planet 2)
 
-    constructor(num_lights = 3) {
+    constructor(num_lights = 4) {
         super();
         this.num_lights = num_lights;
     }
