@@ -8,8 +8,8 @@ const {
 export class Flooring {
 	constructor(program_state, model_transform = Mat4.identity(), scale=1) {
 		this.scale = scale;
-		this.length = 25;
-		this.width = 25;
+		this.length = 20;
+		this.width = 20;
 		this.resolution_x = 20;
 		this.resolution_z = 20;
 		
