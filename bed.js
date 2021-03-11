@@ -114,36 +114,33 @@ export class Bed_Model {
         const scale_amt = 1 - 0.6 * (this.animation_frame/this.animation_max_time);
 
         // Move covers
-        const translate_amt = (this.cover_len - 2) * (1 - scale_amt);
+        const translate_amt = (this.cover_len - 5) * (1 - scale_amt);
         const mt_scale = Mat4.scale(1, scale_amt, 1)
 		const mt_translate = Mat4.translation(0, translate_amt, 0);
-        this.shapes.cover.draw(
-            context, program_state,
-            mt_translate.times(mt_scale).times(this.mt_cover_top),
-            this.materials.cover
-        )
-        this.shapes.cover.draw(
-            context,
-            program_state,
-            mt_translate.times(mt_scale).times(this.mt_cover_side),
-            this.materials.cover
-        )
+        
+        const mt_cover_top = this.model_transform.times(mt_translate)
+                                                 .times(mt_scale)
+                                                 .times(Mat4.inverse(this.model_transform))
+                                                 .times(this.mt_cover_top);
+        const mt_cover_side = this.model_transform.times(mt_translate)
+                                                 .times(mt_scale)
+                                                 .times(Mat4.inverse(this.model_transform))
+                                                 .times(this.mt_cover_side);
+        this.shapes.cover.draw(context, program_state, mt_cover_top, this.materials.cover)
+        this.shapes.cover.draw(context, program_state, mt_cover_side, this.materials.cover)
 
         // Move sheet
         const translate_amt_sheet = this.cover_len * (1 - scale_amt);
         const mt_translate_sheet = Mat4.translation(0, translate_amt_sheet, 0)
+        const mt_sheet_top = this.model_transform.times(mt_translate_sheet)
+                                                 .times(Mat4.inverse(this.model_transform))
+                                                 .times(this.mt_sheet_top);
+        const mt_sheet_side = this.model_transform.times(mt_translate_sheet)
+                                                 .times(Mat4.inverse(this.model_transform))
+                                                 .times(this.mt_sheet_side);
 
-        this.shapes.sheet.draw(
-            context,
-            program_state, mt_translate_sheet.times(this.mt_sheet_top),
-            this.materials.linen
-        )
-        this.shapes.sheet.draw(
-            context,
-            program_state,
-            mt_translate_sheet.times(this.mt_sheet_side),
-            this.materials.linen
-        )
+        this.shapes.sheet.draw(context, program_state, mt_sheet_top, this.materials.linen);
+        this.shapes.sheet.draw(context, program_state, mt_sheet_side, this.materials.linen);
 	}
 	draw_dummy(context, program_state) {
 		let dummy_material = this.materials.mouse_picking.override({color: this.id_color});
