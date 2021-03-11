@@ -17,7 +17,7 @@ const {
 export class Window_Model {
 	constructor(program_state, model_transform = Mat4.identity(), scale=1) {
 		this.scale = scale;
-		this.isOn = true;
+		this.isOn = false;
 
 		this.animation_frame = 0;
 		this.animation_max_time = 20;
