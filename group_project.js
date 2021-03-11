@@ -35,7 +35,7 @@ export class GroupProject extends Scene {
         this.materials = {};
         
         // look_at(cameraPosition, target, up)
-        this.initial_camera_location = Mat4.look_at(vec3(30, 60, -20), vec3(0, 0, 0), vec3(0, 0, -1));
+        this.initial_camera_location = Mat4.look_at(vec3(25, 80, -30), vec3(0, 0, 0), vec3(0, 0, -1));
     }
 
     make_control_panel() {
@@ -77,46 +77,46 @@ export class GroupProject extends Scene {
             // here, we are creating two lamps, one on the floor and one on top of a nightstand, each of which will light up when clicked
             const ground_level = 13; // arbitrary; chose to define the ground level as the bottom of drawer1, just because it was the order that it was coded in
 
-            let mt_drawer1 = model_transform.times(Mat4.translation(-20,-40,3));
+            let mt_drawer1 = model_transform.times(Mat4.translation(-20+10,-40+10,3));
             this.models.drawer1 = new Drawer_Model(program_state, mt_drawer1, 2);
 
-            let mt_table = model_transform.times(Mat4.translation(-45,10,3));
+            let mt_table = model_transform.times(Mat4.translation(-45+10,10+10,3));
             this.models.table = new Table_Model(program_state, mt_table, 2);
 
-            let mt_chair = model_transform.times(Mat4.translation(-40,10,ground_level-5.0));
+            let mt_chair = model_transform.times(Mat4.translation(-40+10,10+10,ground_level-5.0));
             this.models.chair = new Chair_Model(program_state, mt_chair, 2);
 
-            let mt_monitor = model_transform.times(Mat4.translation(-49,10,ground_level-20));
+            let mt_monitor = model_transform.times(Mat4.translation(-49+10,10+10,ground_level-20));
             this.models.monitor = new Monitor_Model(program_state, mt_monitor, 2);
 
-            let mt_door = model_transform.times(Mat4.translation(49,10,ground_level-18));
+            let mt_door = model_transform.times(Mat4.translation(49-10,0,ground_level-18));
             this.models.door = new Door_Model(program_state, mt_door, 2);
 
-            let mt_lamp1 = model_transform.times(Mat4.translation(-45,25,ground_level-20));
-            let mt_lamp2 = model_transform.times(Mat4.translation(-2-20,-40-1,-4.55));
+            let mt_lamp1 = model_transform.times(Mat4.translation(-45+10,25+10,ground_level-20));
+            let mt_lamp2 = model_transform.times(Mat4.translation(-2-20+10,-40-1+10,-4.55));
             this.models.lamp1 = new Lamp_Model(program_state, mt_lamp1, 1, 20);
             this.models.lamp2 = new Lamp_Model(program_state, mt_lamp2, 1, 5);
 
             let mt_flooring = model_transform.times(Mat4.translation(0,0,ground_level));
             this.models.flooring = new Flooring(program_state, mt_flooring);
 
-            let mt_wall_left = model_transform.times(Mat4.translation(-50,0,ground_level));
-            let mt_wall_right = model_transform.times(Mat4.translation(50,0,ground_level));
-            let mt_wall_front = model_transform.times(Mat4.rotation(Math.PI/2,0,0,1)).times(Mat4.translation(-50,0,ground_level)).times(Mat4.rotation(Math.PI,0,0,1));
-            let mt_wall_back = model_transform.times(Mat4.rotation(Math.PI/2,0,0,1)).times(Mat4.translation(50,0,ground_level));
+            let mt_wall_left = model_transform.times(Mat4.translation(-40,0,ground_level));
+            let mt_wall_right = model_transform.times(Mat4.translation(40,0,ground_level));
+            let mt_wall_front = model_transform.times(Mat4.rotation(Math.PI/2,0,0,1)).times(Mat4.translation(-40,0,ground_level)).times(Mat4.rotation(Math.PI,0,0,1));
+            let mt_wall_back = model_transform.times(Mat4.rotation(Math.PI/2,0,0,1)).times(Mat4.translation(40,0,ground_level));
             
             this.models.wall_left = new Wall(program_state, mt_wall_left);
             this.models.wall_right = new Wall(program_state, mt_wall_right);
             this.models.wall_front = new Wall(program_state, mt_wall_front);
             //this.models.wall_back = new Wall(program_state, mt_wall_back); // omitted because of camera clipping
 
-            const mt_bed = model_transform.times(Mat4.translation(-40, 3, 10));
+            const mt_bed = model_transform.times(Mat4.translation(-40+10, -30+10, 10));
             this.models.bed = new Bed_Model(program_state, mt_bed)
 
-            const mt_window = model_transform.times(Mat4.translation(10, -49, -10));
+            const mt_window = model_transform.times(Mat4.translation(10+10, -49+10, -10));
             this.models.window = new Window_Model(program_state, mt_window, 1.3)
 
-            const mt_phone = model_transform.times(Mat4.translation(15, 35, -8));
+            const mt_phone = model_transform.times(Mat4.translation(-20+10+2,-40+10, 0.25));
             this.models.phone = new Phone_Model(program_state, mt_phone, 1)
 
             let model_id = 1000;

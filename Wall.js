@@ -8,7 +8,7 @@ const {
 export class Wall {
 	constructor(program_state, model_transform = Mat4.identity(), scale=1) {
 		this.scale = scale;
-		this.length = 50;
+		this.length = 40;
 		this.height = 25;
 		
 		this.shapes = { 
