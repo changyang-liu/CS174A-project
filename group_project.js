@@ -236,7 +236,7 @@ export class Gouraud_Shader extends Shader {
     // This is a Shader using Phong_Shader as template
     // TODO: Modify the glsl coder here to create a Gouraud Shader (Planet 2)
 
-    constructor(num_lights = 4) {
+    constructor(num_lights = 5) {
         super();
         this.num_lights = num_lights;
     }

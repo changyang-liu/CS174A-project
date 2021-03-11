@@ -93,7 +93,7 @@ export class Window_Model {
     			this.animation_frame -= 1;
 		} else {
 			if (this.animation_frame < this.animation_max_time) {
-			this.animation_frame += 1;
+                this.animation_frame += 1;
             }
 		}
 
