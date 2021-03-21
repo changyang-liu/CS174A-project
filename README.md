@@ -11,5 +11,4 @@
 ### Advanced features
 Mouse-picking
 
-References (code/algorithm/3D objects);
 
